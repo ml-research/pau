@@ -40,7 +40,7 @@ To reproduce the reported results of the paper execute:
 	$ export PYTHONPATH="./"
 	$ python main.py --dataset mnist --optimizer adam --lr 2e-3
 
-	# DATASET is the name of the dataset, for MNIST use mnist and for FashionMNISt use fmnist
+	# DATASET is the name of the dataset, for MNIST use mnist and for Fashion-MNIST use fmnist
 	# OPTIMIZER 
 	# LR
 
