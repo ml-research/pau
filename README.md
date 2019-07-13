@@ -28,7 +28,7 @@ from pau import PAU
 
 model = torch.nn.Sequential(
     torch.nn.Linear(D_in, H),
-    torch.PAU(), # e.g. instead of torch.nn.ReLU() 
+    PAU(), # e.g. instead of torch.nn.ReLU() 
     torch.nn.Linear(H, D_out),
 )
 ~~~~
@@ -38,7 +38,7 @@ model = torch.nn.Sequential(
 To reproduce the reported results of the paper execute:
 
 	$ export PYTHONPATH="./"
-	$ python main.py --dataset mnist --optimizer adam --lr 2e-3
+	$ python experiments/main.py --dataset mnist --optimizer adam --lr 2e-3
 
 	# DATASET is the name of the dataset, for MNIST use mnist and for Fashion-MNIST use fmnist
 	# OPTIMIZER 
