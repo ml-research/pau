@@ -9,10 +9,7 @@ Padé Activation Units (PAU) are a novel learnable activation function. PAUs enc
 <table border="0">
 <tr>
     <td>
-    <img src="./images/logs_mean.png" width="100%" />
-    </td>
-    <td>
-    <img src="./images/activations_approx.pdf", width="90%" />
+    <img src="./images/results.png" width="100%" />
     </td>
 </tr>
 </table>
