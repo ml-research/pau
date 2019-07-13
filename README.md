@@ -12,7 +12,7 @@ Padé Activation Units (PAU) are a novel learnable activation function. PAUs enc
     <img src="./images/logs_mean.png" width="100%" />
     </td>
     <td>
-    <img src="./images/activations_approx.png", width="90%" />
+    <img src="./images/activations_approx.pdf", width="90%" />
     </td>
 </tr>
 </table>
@@ -46,4 +46,4 @@ To reproduce the reported results of the paper execute:
 	# OPTIMIZER 
 	# LR
 
-Note: Throught the implementation of PAU in CUDA the behavior is not determenistic
+Note: Throught the implementation of PAU in CUDA the behavior is not determenistic.
