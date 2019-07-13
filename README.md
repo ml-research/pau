@@ -3,7 +3,7 @@ Padé Activation Units: End-to-end Learning of Activation Functions in Deep Neur
 
 Arxiv link:
 
-## 1. About adé Activation Units
+## 1. About Padé Activation Units
 
 Padé Activation Units (PAU) are a novel learnable activation function. PAUs encode activation functions as rational functions, trainable in an end-to-end fashion using backpropagation and can be seemingless integrated into any neural network in the same way as common activation functions (e.g. ReLU).
 
