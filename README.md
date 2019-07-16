@@ -18,13 +18,17 @@ Padé Activation Units (PAU) are a novel learnable activation function. PAUs enc
 PAU matches or outperforms common activations in terms of predictive performance and training time. 
 And, therefore relieves the network designer of having to commit to a potentially underperforming choice.
 
-## 2. Using PAU in Neural Networks
+## 2. Dependencies
+    PyTorch>=1.1.0
+    CUDA>=10.1
+
+## 3. Using PAU in Neural Networks
 
 PAU can be integrated in the same way as any other common activation function.
 
 ~~~~
 import torch
-from pau import PAU
+from pau.utils import PAU
 
 model = torch.nn.Sequential(
     torch.nn.Linear(D_in, H),
@@ -33,15 +37,16 @@ model = torch.nn.Sequential(
 )
 ~~~~
 
-## 3. Reproducing Results
+## 4. Reproducing Results
 
 To reproduce the reported results of the paper execute:
 
 	$ export PYTHONPATH="./"
-	$ python experiments/main.py --dataset mnist --optimizer adam --lr 2e-3
+	$ python experiments/main.py --dataset mnist --arch conv --optimizer adam --lr 2e-3
 
-	# DATASET is the name of the dataset, for MNIST use mnist and for Fashion-MNIST use fmnist
-	# OPTIMIZER 
-	# LR
+	# DATASET: Name of the dataset, for MNIST use mnist and for Fashion-MNIST use fmnist
+	# ARCH: selected neural network architecture: vgg, lenet or conv
+	# OPTIMIZER: either adam or sgd
+	# LR: learning rate
 
 Note: Throught the implementation of PAU in CUDA the behavior is not determenistic.
