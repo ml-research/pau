@@ -21,8 +21,21 @@ And, therefore relieves the network designer of having to commit to a potentiall
 ## 2. Dependencies
     PyTorch>=1.1.0
     CUDA>=10.1
+    airspeed>=0.5.11
 
-## 3. Using PAU in Neural Networks
+## 3. Installation
+
+PAU is implemented as a pytorch extension using CUDA 10.1. So all that is needed is to install the extension.
+This requires the cuda compiler and dev-tools, however the process is pretty straight forward:
+
+in the folder /pau/cuda execute
+~~~~
+python3 setup.py install
+~~~~
+For this, you might need super user rights or work in a virtual environment.
+
+
+## 4. Using PAU in Neural Networks
 
 PAU can be integrated in the same way as any other common activation function.
 
@@ -37,7 +50,7 @@ model = torch.nn.Sequential(
 )
 ~~~~
 
-## 4. Reproducing Results
+## 5. Reproducing Results
 
 To reproduce the reported results of the paper execute:
 

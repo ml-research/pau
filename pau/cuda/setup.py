@@ -18,7 +18,7 @@ def generate_cpp_module(fname='pau_cuda.cpp', coefficients=coefficients):
 
 #foreach ($coef in $coefficients)
 at::Tensor pau_cuda_forward_$coef[0]_$coef[1](torch::Tensor x, torch::Tensor n, torch::Tensor d);
-std::vector<torch::Tensor> pau_cuda_backward_$coef[0]_$coef[1](float alpha, torch::Tensor grad_output, torch::Tensor x, torch::Tensor n, torch::Tensor d);
+std::vector<torch::Tensor> pau_cuda_backward_$coef[0]_$coef[1](torch::Tensor grad_output, torch::Tensor x, torch::Tensor n, torch::Tensor d);
 #end
 
 #foreach ($coef in $coefficients)
@@ -29,13 +29,13 @@ at::Tensor pau_forward__$coef[0]_$coef[1](torch::Tensor x, torch::Tensor n, torc
 
     return pau_cuda_forward_$coef[0]_$coef[1](x, n, d);
 }
-std::vector<torch::Tensor> pau_backward__$coef[0]_$coef[1](float alpha, torch::Tensor grad_output, torch::Tensor x, torch::Tensor n, torch::Tensor d) {
+std::vector<torch::Tensor> pau_backward__$coef[0]_$coef[1](torch::Tensor grad_output, torch::Tensor x, torch::Tensor n, torch::Tensor d) {
     CHECK_INPUT(grad_output);
     CHECK_INPUT(x);
     CHECK_INPUT(n);
     CHECK_INPUT(d);
 
-    return pau_cuda_backward_$coef[0]_$coef[1](alpha, grad_output, x, n, d);
+    return pau_cuda_backward_$coef[0]_$coef[1](grad_output, x, n, d);
 }
 #end
 
@@ -54,7 +54,7 @@ PYBIND11_MODULE(TORCH_EXTENSION_NAME, m) {
 
 
 def generate_cpp_kernels_module(fname='pau_cuda_kernels.cu', coefficients=coefficients):
-    coefficients = [[c[0],c[1], max(c[0], c[1])] for c in coefficients]
+    coefficients = [[c[0], c[1], max(c[0], c[1])] for c in coefficients]
 
     file_content = airspeed.Template("""
 \#include <torch/extension.h>
@@ -63,6 +63,7 @@ def generate_cpp_kernels_module(fname='pau_cuda_kernels.cu', coefficients=coeffi
 \#include <cuda_runtime.h>
 \#include <vector>
 \#include <stdlib.h>
+
 
 constexpr uint32_t THREADS_PER_BLOCK = 512;
 
@@ -79,9 +80,9 @@ __global__ void pau_cuda_forward_kernel_$coef[0]_$coef[1]( const scalar_t* __res
 
         scalar_t xp1 = x[index];
         scalar_t axp1 = abs(xp1);
-        
+
         #foreach( $idx in [2..$coef[2]] )#set( $value = $idx - 1 )
-        
+
         scalar_t xp$idx = xp$value * xp1;
         scalar_t axp$idx = abs(xp$idx);
         #end
@@ -89,7 +90,7 @@ __global__ void pau_cuda_forward_kernel_$coef[0]_$coef[1]( const scalar_t* __res
         #foreach( $idx in [0..$coef[0]] )
         scalar_t n_$idx = n[$idx];
         #end
-        
+
         #foreach( $idx in [0..$coef[1]] )
         scalar_t d_$idx = d[$idx];
         scalar_t ad_$idx = abs(d_$idx);
@@ -100,13 +101,13 @@ __global__ void pau_cuda_forward_kernel_$coef[0]_$coef[1]( const scalar_t* __res
         + xp$idx*n_$idx
         #end
         ;
-        
+
         scalar_t Q = scalar_t(1.0)
         #foreach( $idx in [1..$coef[1]] )#set( $value = $idx - 1 )
         + axp$idx*ad_$value
         #end
         ;
-        
+
         result[index] = P/Q;
     }
 }
@@ -138,14 +139,13 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
     const scalar_t* __restrict__ x,
     const scalar_t* __restrict__ n,
     const scalar_t* __restrict__ d,
-    const scalar_t __restrict__ alpha,
     scalar_t* __restrict__ d_x,
-    scalar_t* __restrict__ d_n,
-    scalar_t* __restrict__ d_d,
+    double* __restrict__ d_n,
+    double* __restrict__ d_d,
     size_t x_size) {
 
-    __shared__ scalar_t sdd[$coef[0]];
-    __shared__ scalar_t sdn[$coef[1]];
+    __shared__ double sdd[$coef[0]];
+    __shared__ double sdn[$coef[1]];
 
 
     if( threadIdx.x == 0){
@@ -166,7 +166,7 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
     #foreach( $idx in [0..$value] )
     scalar_t d_d$idx = 0;
     #end
-    
+
 
     for (int index = blockIdx.x * blockDim.x + threadIdx.x;
          index < x_size;
@@ -175,12 +175,9 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
 
         scalar_t xp1 = x[index];
         scalar_t axp1 = abs(xp1);
-        
-        scalar_t xp0 = scalar_t(1.0);
-        scalar_t axp0 = scalar_t(1.0);
-        
+
         #foreach( $idx in [2..$coef[2]] )#set( $value = $idx - 1 )
-        
+
         scalar_t xp$idx = xp$value * xp1;
         scalar_t axp$idx = abs(xp$idx);
         #end
@@ -188,7 +185,7 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
         #foreach( $idx in [0..$coef[0]] )
         scalar_t n_$idx = n[$idx];
         #end
-        
+
         #foreach( $idx in [0..$coef[1]] )
         scalar_t d_$idx = d[$idx];
         scalar_t ad_$idx = abs(d_$idx);
@@ -199,13 +196,13 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
         + xp$idx*n_$idx
         #end
         ;
-        
+
         scalar_t Q = scalar_t(1.0)
         #foreach( $idx in [1..$coef[1]] )#set( $value = $idx - 1 )
         + axp$idx*ad_$value
         #end
         ;
-        
+
         scalar_t R = n_1
         #set( $value = $coef[0] - 1 )
         #foreach( $idx in [1..$value] )#set( $value2 = $idx + 1 )
@@ -213,7 +210,7 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
         #end
         ;
         scalar_t S = copysign( scalar_t(1.0), xp1 ) * (ad_0 
-        
+
         #foreach( $idx in [2..$coef[1]] )#set( $value = $idx - 1 )
         + scalar_t($idx.0)*ad_$value*axp$value
         #end
@@ -226,22 +223,19 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
         scalar_t d_i_x = (R/Q + S*mpq2); 
         d_x[index] = d_i_x * grad_o;
 
-        
+
         #foreach( $idx in [1..$coef[1]] )#set( $value = $idx - 1 )
         scalar_t d_i_d$value = (mpq2*axp$idx*copysign( scalar_t(1.0), d_$value ));
-        scalar_t d_i_dp$value = (mpq2*axp$value*copysign( scalar_t(1.0), d_$value ));
-        scalar_t d_i_d_reg$value = scalar_t(2.0)*(d_i_x-scalar_t(1.0))*(d_i_dp$value*scalar_t($idx)*copysign( scalar_t(1.0), xp1)+d_i_d$value*( R/P + scalar_t(2.0)*(-S)/Q));
-        d_d$value += d_i_d$value * grad_o + alpha * d_i_d_reg$value;
+        d_d$value += d_i_d$value * grad_o;
         #end
-        
+
 
         scalar_t d_i_n0 = scalar_t(1.0)/Q; 
-        d_n0 += d_i_n0 * grad_o + alpha * scalar_t(2.0)*(d_i_x-scalar_t(1.0))*(d_i_n0*(-S)/Q);
-        
+        d_n0 += d_i_n0 * grad_o;
+
         #foreach( $idx in [1..$coef[0]] )#set( $value = $idx - 1 )
         scalar_t d_i_n$idx  = xp$idx/Q;
-        scalar_t d_i_n_reg$idx = scalar_t(2.0)*(d_i_x-scalar_t(1.0))*(d_i_n$idx*(-S)/Q + d_i_n$value*scalar_t($idx));
-        d_n$idx += d_i_n$idx * grad_o + alpha * d_i_n_reg$idx;
+        d_n$idx += d_i_n$idx * grad_o;
         #end
 
     }
@@ -253,7 +247,7 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
     #foreach( $idx in [0..$value] )
     atomicAdd(&sdd[$idx], d_d$idx);
     #end
-    
+
 
     __syncthreads();
 
@@ -265,17 +259,17 @@ __global__ void pau_cuda_backward_kernel_$coef[0]_$coef[1](
         #foreach( $idx in [0..$value] )
         atomicAdd(&d_d[$idx], sdd[$idx]);
         #end
-        
+
     }
 
 
 }
 
-std::vector<torch::Tensor> pau_cuda_backward_$coef[0]_$coef[1](float alpha, torch::Tensor grad_output, torch::Tensor x, torch::Tensor n, torch::Tensor d){
+std::vector<torch::Tensor> pau_cuda_backward_$coef[0]_$coef[1](torch::Tensor grad_output, torch::Tensor x, torch::Tensor n, torch::Tensor d){
     const auto x_size = x.numel();
     auto d_x = at::empty_like(x);
-    auto d_n = at::zeros_like(n);
-    auto d_d = at::zeros_like(d);
+    auto d_n = at::zeros_like(n).toType(at::kDouble);
+    auto d_d = at::zeros_like(d).toType(at::kDouble);
 
     int blockSize = THREADS_PER_BLOCK;
 
@@ -286,23 +280,22 @@ std::vector<torch::Tensor> pau_cuda_backward_$coef[0]_$coef[1](float alpha, torc
             x.data<scalar_t>(),
             n.data<scalar_t>(),
             d.data<scalar_t>(),
-            alpha,
             d_x.data<scalar_t>(),
-            d_n.data<scalar_t>(),
-            d_d.data<scalar_t>(),
+            d_n.data<double>(),
+            d_d.data<double>(),
             x_size);
     }));
 
-    return {d_x, d_n, d_d};
+    return {d_x, d_n.toType(at::kFloat), d_d.toType(at::kFloat)};
 }
 #end
         """)
-
 
     content = file_content.merge(locals())
 
     with open(fname, "w") as text_file:
         text_file.write(content)
+
 
 generate_cpp_module(fname='pau_cuda.cpp')
 generate_cpp_kernels_module(fname='pau_cuda_kernels.cu')

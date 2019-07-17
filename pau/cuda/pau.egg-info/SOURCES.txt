@@ -1,9 +1,0 @@
-pau_cuda.cpp
-pau_cuda_kernels.cu
-pau_cuda_kernels_unrestricted.cu
-pau_cuda_unrestricted.cpp
-setup.py
-pau.egg-info/PKG-INFO
-pau.egg-info/SOURCES.txt
-pau.egg-info/dependency_links.txt
-pau.egg-info/top_level.txt
