@@ -1,7 +1,7 @@
 # PAU - Padé Activation Units
 Padé Activation Units: End-to-end Learning of Activation Functions in Deep Neural Network 
 
-Arxiv link:
+Arxiv link: https://arxiv.org/abs/1907.06732
 
 ## 1. About Padé Activation Units
 
