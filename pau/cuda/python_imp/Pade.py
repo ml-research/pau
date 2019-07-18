@@ -117,7 +117,7 @@ class PADEACTIVATION_F_abs_cpp(torch.autograd.Function):
         if not grad_output.is_contiguous():  # TODO this check is necessary if efficientnet is used
             grad_output = grad_output.contiguous()
         x, weight_numerator, weight_denominator = ctx.saved_tensors
-        d_x, d_weight_numerator, d_weight_denominator = PADEACTIVATION_F_abs_cpp.backward_f(PADEACTIVATION_F_abs_cpp.alpha, grad_output, x, weight_numerator,
+        d_x, d_weight_numerator, d_weight_denominator = PADEACTIVATION_F_abs_cpp.backward_f(grad_output, x, weight_numerator,
                                                                               weight_denominator)
 
         return d_x, d_weight_numerator, d_weight_denominator
