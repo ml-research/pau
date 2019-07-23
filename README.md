@@ -62,4 +62,3 @@ To reproduce the reported results of the paper execute:
 	# OPTIMIZER: either adam or sgd
 	# LR: learning rate
 
-Note: Throught the implementation of PAU in CUDA the behavior is not determenistic.
