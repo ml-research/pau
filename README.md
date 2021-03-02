@@ -5,7 +5,8 @@ Arxiv link: https://arxiv.org/abs/1907.06732
 
 ## 1. About Padé Activation Units
 
-Padé Activation Units (PAU) are a novel learnable activation function. PAUs encode activation functions as rational functions, trainable in an end-to-end fashion using backpropagation and can be seemingless integrated into any neural network in the same way as common activation functions (e.g. ReLU).
+### Padé Activation Units (PAU) have become [Rational Activation Functions](https://github.com/ml-research/rational_activations). 
+#### Please check the updated repo [here](https://github.com/ml-research/rational_activations) !  
 
 <table border="0">
 <tr>
@@ -19,9 +20,7 @@ PAU matches or outperforms common activations in terms of predictive performance
 And, therefore relieves the network designer of having to commit to a potentially underperforming choice.
 
 ## 2. Dependencies
-    PyTorch>=1.1.0
-    CUDA>=10.1
-    airspeed>=0.5.11
+    Check new Repo !
 
 ## 3. Installation
 
